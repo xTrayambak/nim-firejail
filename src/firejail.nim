@@ -10,20 +10,23 @@ const
   h = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"]
   invalidWhitelist = ["~", "/dev", "/usr", "/etc", "/opt", "/var",
                       "/bin", "/proc", "/media", "/mnt", "/srv", "/sys"]
-  errBadPath = """Invalid Path for Whitelist: Firejail wont accept this path.
-  Whitelist Sub-Folders of those paths but not the root path itself directly."""
-  v = staticExec("firejail  --version").strip # Get version info from Firejails.
+  errBadPath = """Invalid path for whitelist: Firejail will not accept this path.
+  Whitelist sub-folders of those paths but not the root path itself directly."""
+  v = staticExec("firejail  --version").strip # Get version info from Firejail.
   firejailVersion* = v.splitLines[0].replace("firejail version ", "").strip
   enUsUtf8 = "--env=LC_CTYPE='en_US.UTF-8' --env=LC_NUMERIC='en_US.UTF-8' --env=LC_TIME='en_US.UTF-8' --env=LC_COLLATE='en_US.UTF-8' --env=LC_MONETARY='en_US.UTF-8' --env=LC_MESSAGES='en_US.UTF-8' --env=LC_PAPER='en_US.UTF-8' --env=LC_NAME='en_US.UTF-8' --env=LC_ADDRESS='en_US.UTF-8' --env=LC_TELEPHONE='en_US.UTF-8' --env=LC_MEASUREMENT='en_US.UTF-8' --env=LC_IDENTIFICATION='en_US.UTF-8' --env=LC_ALL='en_US.UTF-8' --env=LANG='en_US.UTF-8'"
 
-let fea = try: "{" & v.normalize.split("compile time support:")[1].multiReplace(
-    ("disabled", "false,"), ("enabled", "true,"),
-    (" support is ", "\": " ), ("- ", " \"" ), ("-", "_" )) & "}"
-    except: """{"apparmor":false,"appimage":false,"chroot":false,
-    "file and directory whitelisting":false,"file transfer":false,
-    "networking":false,"overlayfs":false,"private_home":false,
-    "seccomp_bpf":false,"user namespace":false,"x11 sandboxing":false}"""
+var fea = """
+    {
+      "apparmor": false, "appimage": false, "chroot": false,
+      "file and directory whitelisting": false, "file transfer": false,
+      "networking": false,"overlayfs": false, "private_home": false,
+      "seccomp_bpf": false, "user namespace":false, "x11 sandboxing": false
+    }
+  """
 
+echo v
+echo fea
 let firejailFeatures* = parseJson(fea)  ## Features available on the Firejails.
 
 
@@ -33,7 +36,7 @@ type
     noRamWriteExec*, no3d*, noDbus*, noDvd*, noGroups*, noNewPrivs*: bool
     noRoot*, noSound*, noAutoPulse*, noVideo*, forceEnUsUtf8*, noU2f*: bool
     privateTmp*, private*, privateCache*, privateDev*, noTv*, writables*: bool
-    seccomp*, noShell*, noX*, noNet*, noIp*, noDebuggers*, appimage*: bool
+    seccomp*, noX*, noNet*, noDebuggers*, appimage*: bool
     newIpcNamespace*,  useMtuJumbo9000*, useNice20*, useRandomMac*: bool
 
 
@@ -92,63 +95,63 @@ proc makeCommand*(this: Firejail, command: string, timeout: range[0..99] = 0, na
         denese.add " --dns=" & servo.quoteShell
 
   let cmd = [
-    "firejail --noprofile",
+    "firejail --noprofile ",
 
-    when defined(release): "--quiet" else: "--debug", # quiet for performance.
+    when defined(release): "--quiet " else: "--debug ", # quiet for performance.
 
-    if this.noAllusers:   "" else: "--allusers",
-    if this.apparmor:     "--apparmor" else: "",
-    if this.caps:         "--caps" else: "",
-    if this.noKeepDevShm: "" else: "--keep-dev-shm",
-    if this.noMachineId:  "" else: "--machine-id",
-    if this.no3d:         "--no3d" else: "",
-    if this.noDbus:       "--nodbus" else: "",
-    if this.noDvd:        "--nodvd" else: "",
-    if this.noGroups:     "--nogroups" else: "",
-    if this.noNewPrivs:   "--nonewprivs" else: "",
-    if this.noRoot:       "--noroot" else: "",
-    if this.noSound:      "--nosound" else: "",
-    if this.noAutoPulse:  "--noautopulse" else: "",
-    if this.noVideo:      "--novideo" else: "",
-    if this.noU2f:        "--nou2f" else: "",
-    if this.noTv:         "--notv" else: "",
-    if this.privateTmp:   "--private-tmp" else: "",
-    if this.private:      "--private" else: "",
-    if this.privateCache: "--private-cache" else: "",
-    if this.privateDev:   "--private-dev" else: "",
-    if this.seccomp:      "--seccomp" else: "",
-    if this.noShell:      "--shell=none" else: "--shell=/bin/bash", #ZSH/Fish sometimes fail,force plain old Bash.
-    if this.noX:          "--x11=xvfb" else: "", # "none" complains about network.
-    if this.noNet:        "--net=none" else: "",
-    if this.noIp:         "--ip=none" else: "",
-    if this.noDebuggers:  "" else: "--allow-debuggers",
-    if this.appimage:     "--appimage" else: "",
-    if this.useNice20:    "--nice=20" else: "",
-    if this.writables:    "--writable-etc --writable-run-user --writable-var --writable-var-log" else: "",
+    if this.noAllusers:   "" else: "--allusers ",
+    if this.apparmor:     "--apparmor " else: "",
+    if this.caps:         "--caps " else: "",
+    if this.noKeepDevShm: "" else: "--keep-dev-shm ",
+    if this.noMachineId:  "" else: "--machine-id ",
+    if this.no3d:         "--no3d " else: "",
+    if this.noDbus:       "--nodbus " else: "",
+    if this.noDvd:        "--nodvd " else: "",
+    if this.noGroups:     "--nogroups " else: "",
+    if this.noNewPrivs:   "--nonewprivs " else: "",
+    if this.noRoot:       "--noroot " else: "",
+    if this.noSound:      "--nosound " else: "",
+    if this.noAutoPulse:  "--noautopulse " else: "",
+    if this.noVideo:      "--novideo " else: "",
+    if this.noU2f:        "--nou2f " else: "",
+    if this.noTv:         "--notv " else: "",
+    if this.privateTmp:   "--private-tmp " else: "",
+    if this.private:      "--private " else: "",
+    if this.privateCache: "--private-cache " else: "",
+    if this.privateDev:   "--private-dev " else: "",
+    if this.seccomp:      "--seccomp " else: "",
+    # if this.noShell:      "--shell=none " else: "--shell=/bin/bash ", #ZSH/Fish sometimes fail,force plain old Bash.
+    if this.noX:          "--x11=xvfb " else: "", # "none" complains about network.
+    if this.noNet:        "--net=none " else: "",
+    # if this.noIp:         "--ip=none " else: "",
+    if this.noDebuggers:  "" else: "--allow-debuggers ",
+    if this.appimage:     "--appimage " else: "",
+    if this.useNice20:    "--nice=20 " else: "",
+    if this.writables:    "--writable-etc --writable-run-user --writable-var --writable-var-log " else: "",
     if this.forceEnUsUtf8:   enUsUtf8 else: "",
-    if this.useMtuJumbo9000: "--mtu=9000" else: "",
-    if this.useRandomMac:    "--mac=" & randomMacAddress().quoteShell else: "",
-    if this.newIpcNamespace: "--ipc-namespace" else: "",
-    if this.noRamWriteExec:  "--memory-deny-write-execute" else: "",
-    if this.noMnt:           "--disable-mnt" else: "",
+    if this.useMtuJumbo9000: "--mtu=9000 " else: "",
+    if this.useRandomMac:    "--mac= " & randomMacAddress().quoteShell else: "",
+    if this.newIpcNamespace: "--ipc-namespace " else: "",
+    if this.noRamWriteExec:  "--memory-deny-write-execute " else: "",
+    if this.noMnt:           "--disable-mnt " else: "",
 
-    if timeout != 0:      "--timeout=" & quoteShell($timeout & ":00:00") else: "",
-    if name != "":        "--name=" & nam & " --hostname=" & nam else: "",
-    if gateway != "":     "--defaultgw=" & gateway.quoteShell else: "",
-    if hostsFile != "":   "--hosts-file=" & hostsFile.quoteShell else: "",
-    if logfile != "":     "--output=" & lgs & " --output-stderr=" & lgs else: "",
-    if chroot != "":      "--chroot=" & chroot.quoteShell else: "",
-    if tmpfs != "":       "--tmpfs=" & tmpfs.quoteShell else: "",
-    if maxRam != 0:       "--rlimit-as=" & $maxRam else: "",
-    if maxCpu != 0:       "--rlimit-cpu=" & $maxCpu else: "",
-    if maxFileSize != 0:  "--rlimit-fsize=" & $maxFileSize else: "",
-    if maxOpenFiles != 0: "--rlimit-nofile=" & $maxOpenFiles else: "",
-    if maxSubProcesses != 0:    "--rlimit-nproc=" & $maxSubProcesses else: "",
-    if maxPendingSignals != 0:  "--rlimit-sigpending=" & $maxPendingSignals else: "",
-    if cpuCoresByNumber != @[]: "--cpu=" & cpuCoresByNumber.join(",").quoteShell else: "",
+    if timeout != 0:      "--timeout=" & quoteShell($timeout & ":00:00") & " " else: "",
+    if name != "":        "--name=" & nam & " --hostname=" & nam & " " else: "",
+    if gateway != "":     "--defaultgw=" & gateway.quoteShell & " " else: "",
+    if hostsFile != "":   "--hosts-file=" & hostsFile.quoteShell & " " else: "",
+    if logfile != "":     "--output=" & lgs & " --output-stderr=" & lgs & " " else: "",
+    if chroot != "":      "--chroot=" & chroot.quoteShell & " " else: "",
+    if tmpfs != "":       "--tmpfs=" & tmpfs.quoteShell & " " else: "",
+    if maxRam != 0:       "--rlimit-as=" & $maxRam & " " else: "",
+    if maxCpu != 0:       "--rlimit-cpu=" & $maxCpu & " " else: "",
+    if maxFileSize != 0:  "--rlimit-fsize=" & $maxFileSize & " " else: "",
+    if maxOpenFiles != 0: "--rlimit-nofile=" & $maxOpenFiles & " " else: "",
+    if maxSubProcesses != 0:    "--rlimit-nproc=" & $maxSubProcesses & " " else: "",
+    if maxPendingSignals != 0:  "--rlimit-sigpending=" & $maxPendingSignals & " " else: "",
+    if cpuCoresByNumber != @[]: "--cpu=" & cpuCoresByNumber.join(",").quoteShell & " " else: "",
 
-    denese, blancas, negras, command
-  ].join(" ")
+    command
+  ].join()
   when not defined(release): echo cmd
   result = cmd
 
