@@ -1,7 +1,7 @@
 ## .. image:: https://source.unsplash.com/-YGdiRcY9Sc/800x402
 import json
 from os import quoteShell
-from osproc import execCmd
+from osproc import execCmdEx
 from random import randomize, sample
 from strutils import strip, split, splitLines, normalize, replace, join, multiReplace
 
@@ -160,10 +160,12 @@ proc exec*(this: Firejail, command: string, timeout: range[0..99] =0, name="",
            maxOpenFiles = 0, maxFileSize = 0, maxPendingSignals = 0,
            maxRam = 0, maxCpu = 0, cpuCoresByNumber: seq[int] = @[]): int =
   ## Return  a process on a Firejails sandbox, using the provided config.
-  result = execCmd(makeCommand(
-    this, command, timeout, name, gateway, hostsFile, logFile, chroot, tmpfs,
-    whitelist, blacklist, dnsServers, maxSubProcesses, maxOpenFiles,
-    maxFileSize, maxPendingSignals, maxRam, maxCpu, cpuCoresByNumber))
+  result = execCmdEx(
+    makeCommand(
+      this, command, timeout, name, gateway, hostsFile, logFile, chroot, tmpfs,
+      whitelist, blacklist, dnsServers, maxSubProcesses, maxOpenFiles,
+      maxFileSize, maxPendingSignals, maxRam, maxCpu, cpuCoresByNumber)
+    ).exitCode
 
 
 ###############################################################################
